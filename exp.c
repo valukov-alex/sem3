@@ -8,11 +8,15 @@
 #include <string.h>
 
 #define N 100000000
+
+/*
+ * FIXIT:
+ * Стиль названий переменных должен быть одинаковый: например, константы - заглавные буквы, слова отделены подчёркиванием
+ * N_CORE
+ */
 #define n_core 1
 
-
 int* a;
-
 
 struct part
 {
@@ -22,9 +26,20 @@ struct part
 	int end;
 };
 
+/*
+ * FIXIT:
+ * Почему вы назвали массив core?
+ * core = ядро ... и?
+ * Видимо стоит подумать над более подходящим названием.
+ */
 struct part core[n_core];
 
-
+/*
+ * FIXIT:
+ * при компиляции не должно быть warning'ов:
+ * сигнатура ф-и должна быть void* func(void* arg).
+ * Приведение arg к нужному типу осуществляется внутри ф-и.
+ */
 void* my_thread(struct part* arg)
 {
 	int i, sum = 0;
@@ -39,7 +54,6 @@ void* my_thread(struct part* arg)
 
 	return NULL;
 }
-
 
 int main()
 {
