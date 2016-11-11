@@ -6,11 +6,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <sys/types.h> 
-#include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 
 #define TABLE_LIMIT 3
@@ -45,6 +44,7 @@ int main()
 	
 	key_t key; 
 	FILE* fl;
+	int sz;
 	int i,fd[2],j,n,result;
 	char one_d[15];
 	char one_d1[15];
@@ -58,6 +58,7 @@ int main()
         printf("Can`t get semid\n");
         exit(-1);
 	}
+	
 	if ((fl = fopen("washer.txt","r"))==NULL) //считываем из файла для мойщика в массив структур для мойщика
 	{
 		printf("File not found.\n");
@@ -77,7 +78,7 @@ int main()
 		fscanf(fl, "%s %*c %d", wiper[i].dish, &wiper[i].time);
 	}
 	fclose(fl);
-	sem(0,2); //создаем место на столе для нашей зеркально-чистой посуды
+	sem(0,TABLE_LIMIT); //создаем место на столе для нашей зеркально-чистой посуды
 	pipe(fd);
 	result = fork();
 	if(result > 0) // родак
@@ -100,12 +101,16 @@ int main()
 					break;
 				}
 		fclose(fl);
+		int o = 0;
+		write(fd[1], &o, 4);
+		int zero = 0;
+		wait(&zero);
 	}
 	else
 	{
-		while(1)
+		while(sz != 4)
 		{
-			read(fd[0], one_d1, 15);
+			sz = read(fd[0], one_d1, 15);
 			for(i = 0; i < N_DISHES; i++)  //перебираем название посуды вытиральщика и сравниваем с читаемым типом
 				if(strcmp(one_d1, wiper[i].dish) == 0) 
 					{
@@ -115,6 +120,7 @@ int main()
 					}
 		}
 	}
+	semctl(semid, IPC_RMID, 1);
 	return 0;
 }
 		
